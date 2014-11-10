@@ -82,16 +82,33 @@ def get_pareto_A(nil80, kunj80):
   
 
 class Items:
-  def __init__(self, nama_obat, data):
+  def __init__(self, nama_obat, data, data_pareto):
     self.nama_obat = nama_obat
     self.data = data
+    self.data_pareto = data_pareto
     self.qty_penj = []
     self.kunj = []
-  def get_qty(self):
+    self.pareto = get_pareto()
+    self.get_data()
+  def get_data(self):
     for i in range(1,4):
-      for j,k,l,m in self.data:
-        if j == nama_obat:
-          
+      if nama_obat in self.data[i].keys():
+        self.qty_penj.append(self.data[i][nama_obat][0])
+        self.kunj.append(self.data[i][nama_obat][2])
+      else:
+        self.qty_penj.append(0)
+        self.kunj.append(0)
+  def get_max_qty(self):
+    return max(self.qty_penj)
+  def get_cure_qty(self):
+    return sum(self.qty_penj)/sum(self.kunj)
+  def get_pareto(self):
+    if nama_obat in self.data_pareto[0]:
+      return "A"
+    elif nama_obat in self.data_pareto[1]:
+      return "B"
+    else:
+      return "C"
       
 
 
@@ -149,6 +166,8 @@ if __name__ == "__main__":
   for i in S_items:
     if i not in nil80_U_kunj80:
       pareto_C_items_unity.append(i)
+  
+  data_pareto_items = (pareto_A_items_unity, pareto_B_items_unity, pareto_C_items_unity)
 
   with open('pareto_a.txt','w') as pa:
     for i in pareto_A_items_unity:
@@ -165,4 +184,3 @@ if __name__ == "__main__":
   with open('semesta.txt','w') as s:
     for i in S_items:
       s.write(i + "\n")
-  
