@@ -88,13 +88,12 @@ class Items:
     self.data_pareto = data_pareto
     self.qty_penj = []
     self.kunj = []
-    self.pareto = get_pareto()
     self.get_data()
   def get_data(self):
     for i in range(1,4):
-      if nama_obat in self.data[i].keys():
-        self.qty_penj.append(self.data[i][nama_obat][0])
-        self.kunj.append(self.data[i][nama_obat][2])
+      if self.nama_obat in self.data[i].keys():
+        self.qty_penj.append(self.data[i][self.nama_obat][0])
+        self.kunj.append(self.data[i][self.nama_obat][2])
       else:
         self.qty_penj.append(0)
         self.kunj.append(0)
@@ -103,9 +102,9 @@ class Items:
   def get_cure_qty(self):
     return sum(self.qty_penj)/sum(self.kunj)
   def get_pareto(self):
-    if nama_obat in self.data_pareto[0]:
+    if self.nama_obat in self.data_pareto[0]:
       return "A"
-    elif nama_obat in self.data_pareto[1]:
+    elif self.nama_obat in self.data_pareto[1]:
       return "B"
     else:
       return "C"
@@ -119,7 +118,7 @@ if __name__ == "__main__":
   for i in range(1,4):
     listitems_123[i] = []
     for j in par_123[i].keys():
-      listitems_123[i].append([j, par_123[i][0], par_123[i][1], par_123[i][2]])
+      listitems_123[i].append([j, par_123[i][j][0], par_123[i][j][1], par_123[i][j][2]])
   
   nilai_100_123 = {}
   for i in range(1,4):
@@ -127,7 +126,7 @@ if __name__ == "__main__":
   
   kunj_100_123 = {}
   for i in range(1,4):
-    kunj_100_123[i] = get_sorted_100(listitem_123[i], 3)
+    kunj_100_123[i] = get_sorted_100(listitems_123[i], 3)
 
   nilai_80_123 = {}
   for i in range(1,4):
@@ -184,3 +183,15 @@ if __name__ == "__main__":
   with open('semesta.txt','w') as s:
     for i in S_items:
       s.write(i + "\n")
+  
+  all_items = {}
+  for i in S_items:
+    all_items[i] = Items(i, par_123, data_pareto_items)
+  
+  with open('all_items.txt','w') as all:
+    all.write("NO.\tNAMA_OBAT\tQTY_PENJ_PER_BULAN\tPARETO\tCURE_QTY\n")
+    counter = 0
+    for i in all_items.keys():
+      counter += 1
+      all.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(counter, i, all_items[i].get_max_qty(), all_items[i].get_pareto(), all_items[i].get_cure_qty()))
+      
