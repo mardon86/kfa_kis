@@ -1,4 +1,5 @@
 import re,string,os
+from operator import itemgetter
 
 def load_raw_master(raw_master_file):
   with open(raw_master_file,'r') as rmf:
@@ -124,16 +125,13 @@ if __name__ == '__main__':
       dict_tbhisdetiljual3[i[0]]['JMLHRG_NETTO'] = [int(i[3])]
       
   dict_tbhisdetiljual_gabung = [dict_tbhisdetiljual1, dict_tbhisdetiljual2, dict_tbhisdetiljual3]
-  
-  class Items:
-    def __init__(self,kode_obat):
-      
-    
-  
+
   list_pareto_nilai1 = []
   for i in dict_tbhisdetiljual1.keys():
     list_pareto_nilai1.append([i, dict_tbhisdetiljual1[i]['NAMA_OBAT'], sum(dict_tbhisdetiljual1[i]['JMLHRG_NETTO'])])
   
+  #return sorted(the_list, key=itemgetter(itmgttr), reverse = True)
+
   list_pareto_nilai2 = []
   for i in dict_tbhisdetiljual2.keys():
     list_pareto_nilai2.append([i, dict_tbhisdetiljual2[i]['NAMA_OBAT'], sum(dict_tbhisdetiljual2[i]['JMLHRG_NETTO'])])
@@ -142,4 +140,22 @@ if __name__ == '__main__':
   for i in dict_tbhisdetiljual3.keys():
     list_pareto_nilai3.append([i, dict_tbhisdetiljual3[i]['NAMA_OBAT'], sum(dict_tbhisdetiljual3[i]['JMLHRG_NETTO'])])
   
+  list_pareto_kunj1 = []
+  for i in dict_tbhisdetiljual1.keys():
+    list_pareto_kunj1.append([i, dict_tbhisdetiljual1[i]['NAMA_OBAT'], len(dict_tbhisdetiljual1[i]['QTYJUAL_OBAT'])])
+  
+  list_pareto_kunj2 = []
+  for i in dict_tbhisdetiljual2.keys():
+    list_pareto_kunj2.append([i, dict_tbhisdetiljual2[i]['NAMA_OBAT'], len(dict_tbhisdetiljual2[i]['QTYJUAL_OBAT'])])
+  
+  list_pareto_kunj3 = []
+  for i in dict_tbhisdetiljual3.keys():
+    list_pareto_kunj3.append([i, dict_tbhisdetiljual3[i]['NAMA_OBAT'], len(dict_tbhisdetiljual3[i]['QTYJUAL_OBAT'])])
+
+  
+  class Items:
+    def __init__(self,kode_obat):
+      self.kode_obat = kode_obat
+      self.nama_obat = nama_obat
+      self.
   
