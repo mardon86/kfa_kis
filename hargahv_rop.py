@@ -361,6 +361,13 @@ if __name__ == '__main__':
       irisan_80_qty_nilai3.append(i)                    # ==========> Pareto A di bulan 3
 
 
+  list_kode_obat_dokter_inhouse = []
+  with open('obat_dokter_inhouse.txt','r') as di:
+    for line in di:
+      if line[0].isdigit():
+        list_kode_obat_dokter_inhouse.append(re.sub("^ *| *$","",string.split(line,'\t')[0]))
+
+
   pareto_a = []
   for i in more_than_once_gabung_80_qty_nilai_123:
     skor = 0
