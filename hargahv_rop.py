@@ -379,6 +379,8 @@ if __name__ == '__main__':
       skor += 1
     if skor > 1:
       pareto_a.append(i)                                   # ==========> PARETO A
+  for i in list_kode_obat_dokter_inhouse:
+    pareto_a.append(i)
 
   
   pareto_b = []
@@ -493,7 +495,7 @@ if __name__ == '__main__':
   #with open('max_of_them.txt','w') as mot:
     #for i in max_of_them.keys():
       #mot.write('{0}\t{1}\n'.format(list_master_corrected[i][0], max_of_them[i]))
-  
+  print list_kode_obat_dokter_inhouse
   with open('all_of_them.txt','w') as aot:
     aot.write('NAMA_OBAT\tMON_MAX_USAGE\tPARETO\tTRG_STK_PARETO\tQTY_CURE\tQTY_MIN_DISP\tMAX_OTHEM\n')
     for i in list_kode_obat_aktif:
