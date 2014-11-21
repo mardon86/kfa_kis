@@ -1,5 +1,6 @@
 import re, string, os, time, math
 from operator import itemgetter
+from decimal import Decimal
 
 def load_raw_master(raw_master_file):
   with open(raw_master_file,'r') as rmf:
@@ -37,7 +38,7 @@ def get_big_80(the_list):
   for i,j,k in tl:
     sum_values += k
   big_80 = []
-  eighty_percent_of_sum_values = 0.8 * sum_values
+  eighty_percent_of_sum_values = Decimal('0.8') * sum_values
   sum_big80 = 0
   for i in tl:
     if sum_big80 < eighty_percent_of_sum_values:
@@ -96,13 +97,13 @@ if __name__ == '__main__':
   list_master = create_master_list(lrmf, patt_rm)
 
   
-  list_nama_shaft = {'HV':[], 'ETH':[]}
+  list_nama_shaft = {'DISPLAY':[], 'NON-DISPLAY':[]}
   with open('nama_shaft.txt','r') as ns:
     for line in ns:
-      if string.split(re.sub('\n','',line),'|')[1] == 'HV':
-        list_nama_shaft['HV'].append(string.split(re.sub('\n','',line),'|')[0])
+      if string.split(re.sub('\n','',line),'|')[1] == 'DISPLAY':
+        list_nama_shaft['DISPLAY'].append(string.split(re.sub('\n','',line),'|')[0])
       else:
-        list_nama_shaft['ETH'].append(string.split(re.sub('\n','',line),'|')[0])
+        list_nama_shaft['NON-DISPLAY'].append(string.split(re.sub('\n','',line),'|')[0])
 
     
   list_master_corrected = {}
@@ -117,10 +118,7 @@ if __name__ == '__main__':
     else:
       qty_akh -= (num * pow(10,exp))
     
-    if (i[9] == "-") and (i[10] == "-"):
-      tanggal1 = '-'
-      tanggal2 = '-'
-    elif (i[9] != "-") and (i[10] != "-"):
+    if (i[9] != "-") and (i[10] != "-"):
       tgl1 = int(i[9][3:5])
       bln1 = int(i[9][:2])
       thn1 = int(i[9][-4:])
@@ -128,22 +126,14 @@ if __name__ == '__main__':
       tgl2 = int(i[10][3:5])
       bln2 = int(i[10][:2])
       thn2 = int(i[10][-4:])
-      tanggal2 = time.mktime((thn1, bln1, tgl1, 0, 0, 0, 0, 0, 0))
-    elif (i[9] == "-") and (i[10] != "-"):
-      tanggal1 = 1
-      tgl2 = int(i[10][3:5])
-      bln2 = int(i[10][:2])
-      thn2 = int(i[10][-4:])
-      tanggal2 = time.mktime((thn1, bln1, tgl1, 0, 0, 0, 0, 0, 0))
-    elif (i[9] != "-") and (i[10] == "-"):
-      tgl1 = int(i[9][3:5])
-      bln1 = int(i[9][:2])
-      thn1 = int(i[9][-4:])
-      tanggal1 = time.mktime((thn1, bln1, tgl1, 0, 0, 0, 0, 0, 0))
-      tanggal2 = 9999999999
-    
-    list_master_corrected[i[0]] = [i[1], 'HV' if i[2] in list_nama_shaft['HV'] else 'ETH' if i[2] in list_nama_shaft['ETH'] else '',i[2], i[3], qty_akh, int(i[5][:-3]), float(i[6]), int(i[7][:-3]), float(i[8]), tanggal1, tanggal2]
-    # [KODE_OBAT] = [NAMA_OBAT,JENIS,LOKASI,SATUAN_OBAT,QTYAKHIR_OBAT,HNAPPNREG_OBAT,FAKTOR3,HJAH,DISCH,TANGGAL1,TANGGAL2]
+      tanggal2 = time.mktime((thn2, bln2, tgl2, 0, 0, 0, 0, 0, 0))
+    elif i[9] == "-" or i[10] == "-":
+      tanggal1 = 0
+      tanggal2 = 0
+      
+																			      #loc  sat     qty             hnappn                             faktor           hjah          disc              
+    list_master_corrected[i[0]] = [i[1], 'DISPLAY' if i[2] in list_nama_shaft['DISPLAY'] else 'NON-DISPLAY' if i[2] in list_nama_shaft['NON-DISPLAY'] else '',i[2], i[3], qty_akh, Decimal('{0}'.format(i[5])), Decimal('{0}'.format(i[6])), int(i[7][:-3]), Decimal(i[8]), tanggal1, tanggal2]
+    ## [KODE_OBAT] = [NAMA_OBAT,JENIS,LOKASI,SATUAN_OBAT,QTYAKHIR_OBAT,HNAPPNREG_OBAT,FAKTOR3,HJAH,DISCH,TANGGAL1,TANGGAL2]
     
     
   data_qty_min_display = {}
@@ -257,7 +247,7 @@ if __name__ == '__main__':
   
   list_kode_obat_aktif = []
   for i in list_master_corrected.keys():
-    if i in list_kode_obat_in_pareto or list_master_corrected[i][2] in list_nama_shaft['HV'] + list_nama_shaft['ETH'] or list_master_corrected[i][4] != 0:
+    if i in list_kode_obat_in_pareto or list_master_corrected[i][2] in list_nama_shaft['DISPLAY'] + list_nama_shaft['NON-DISPLAY'] or list_master_corrected[i][4] != 0:
       list_kode_obat_aktif.append(i)
 
   
@@ -395,15 +385,6 @@ if __name__ == '__main__':
       pareto_c.append(i)                                   # ==========> PARETO C
   
 
-#  # KODE_OBAT,NAMA_OBAT,LOKASI,SATUAN_OBAT,QTYAKHIR_OBAT,HNAPPNREG_OBAT,FAKTOR3,HJAH,DISCH,TANGGAL1,TANGGAL2
-#  class Items:
-#    def __init__(self,kode_obat, master):
-#      self.kode_obat = kode_obat
-#      self.nama_obat = nama_obat
-#      self.master = master
-#      self.lokasi = lokasi
- 
-  
   ll = [list_master,list_master_corrected,list_qty_min_display,list_tbhisdetiljual1,list_tbhisdetiljual2,list_tbhisdetiljual3,dict_tbhisdetiljual1,dict_tbhisdetiljual2,dict_tbhisdetiljual3,list_pareto_nilai1,list_pareto_nilai2,list_pareto_nilai3,list_pareto_kunj1,list_pareto_kunj2,list_pareto_kunj3,list_big80[0],list_big80[1],list_big80[2],list_big80[3],list_big80[4],list_big80[5],list_kode_obat_in_pareto,list_kode_obat_aktif,qty_cure,gabung_80_qty_nilai1,gabung_80_qty_nilai2,gabung_80_qty_nilai3,more_than_once_gabung_80_qty_nilai_123,list_kode_obat_pareto_nilai1,list_kode_obat_pareto_kunj1,irisan_80_qty_nilai1,list_kode_obat_pareto_nilai2,list_kode_obat_pareto_kunj2,irisan_80_qty_nilai2,list_kode_obat_pareto_nilai3,list_kode_obat_pareto_kunj3,irisan_80_qty_nilai3,pareto_a,pareto_b,pareto_c]
   lt = ['list_master','list_master_corrected','list_qty_min_display','list_tbhisdetiljual1','list_tbhisdetiljual2','list_tbhisdetiljual3','dict_tbhisdetiljual1','dict_tbhisdetiljual2','dict_tbhisdetiljual3','list_pareto_nilai1','list_pareto_nilai2','list_pareto_nilai3','list_pareto_kunj1','list_pareto_kunj2','list_pareto_kunj3','list_big80[0]','list_big80[1]','list_big80[2]','list_big80[3]','list_big80[4]','list_big80[5]','list_kode_obat_in_pareto','list_kode_obat_aktif','qty_cure','gabung_80_qty_nilai1','gabung_80_qty_nilai2','gabung_80_qty_nilai3','more_than_once_gabung_80_qty_nilai_123','list_kode_obat_pareto_nilai1','list_kode_obat_pareto_kunj1','irisan_80_qty_nilai1','list_kode_obat_pareto_nilai2','list_kode_obat_pareto_kunj2','irisan_80_qty_nilai2','list_kode_obat_pareto_nilai3','list_kode_obat_pareto_kunj3','irisan_80_qty_nilai3','pareto_a','pareto_b','pareto_c']
   dl = {}
@@ -412,45 +393,9 @@ if __name__ == '__main__':
   for i in lt:
     print("{0}: {1}".format(i, len(dl[i])))
   
-#  with open('kunj.txt','w') as ku:
-#    for i in list_pareto_kunj1:
-#      ku.write("{0}\t{1}\t{2}\n".format(i[0], i[1], i[2]))
-  
-#  with open('nilai.txt','w') as ni:
-#    for i in list_pareto_nilai1:
-#      ni.write("{0}\t{1}\t{2}\n".format(i[0], i[1], i[2]))
- 
-#  with open('nilai80.txt','w') as ni:
-#    for i in list_big80[0]:
-#      ni.write("{0}\t{1}\t{2}\n".format(i[0], i[1], i[2]))
-
-#  with open('kunj80.txt','w') as ni:
-#    for i in list_big80[3]:
-#      ni.write("{0}\t{1}\t{2}\n".format(i[0], i[1], i[2]))
-
-#  with open('pareto_a_1.txt','w') as pa:
-#    for i in irisan_80_qty_nilai1:
-#      pa.write("{0}\n".format(i))
-
-#  with open("qty_cure.txt","w") as qc:
-#    for i in qty_cure.keys():
-#      qc.write("{0}\t{1}\t{2}\n".format(i,list_master_corrected[i][0],qty_cure[i]))
-
-#  with open('master.txt','w') as mas:
-#    for i in list_kode_obat_aktif:
-#      mas.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n".format(i,list_master_corrected[i][0],list_master_corrected[i][1],list_master_corrected[i][2],list_master_corrected[i][3],list_master_corrected[i][4],list_master_corrected[i][5],list_master_corrected[i][6],list_master_corrected[i][7],list_master_corrected[i][8],list_master_corrected[i][9],list_master_corrected[i][10]))
-
-  #temp = []
-  #for i in list_kode_obat_aktif:
-  #if list_master_corrected[i][1] == 'HV' or (list_master_corrected[i][1] == '' and list_master_corrected[i][4] != 0):
-    #temp.append([i,list_master_corrected[i][0],list_master_corrected[i][2],list_master_corrected[i][3],data_qty_min_display[i] if i in data_qty_min_display.keys() else ''])
-
-  #temp2 = sorted(temp, key=itemgetter(2,1))
-  
-  #with open('data_qty_min_display.txt','w') as md:
-    #md.write("KODE_OBAT\tNAMA_OBAT\tLOKASI\tSATUAN_OBAT\tQTYMIN_DISPLAY\n")
-    #for i in temp2:
-      #md.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(i[0], i[1], i[2], i[3], i[4]))
+  #with open('master.txt','w') as mas:
+    #for i in list_kode_obat_aktif:
+      #mas.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n".format(i,list_master_corrected[i][0],list_master_corrected[i][1],list_master_corrected[i][2],list_master_corrected[i][3],list_master_corrected[i][4],list_master_corrected[i][5],list_master_corrected[i][6],list_master_corrected[i][7],list_master_corrected[i][8],list_master_corrected[i][9],list_master_corrected[i][10],int(time.time())))
 
   monthly_max_usage = {}
   for i in list_kode_obat_aktif:
@@ -459,12 +404,8 @@ if __name__ == '__main__':
     third = sum(dict_tbhisdetiljual3[i]['QTYJUAL_OBAT']) if i in dict_tbhisdetiljual3.keys() else 0
     monthly_max_usage[i] = max(first, second, third)
 
-  faktor_pengali_pareto = {"A":1.0, "B":0.75, "C":0.5}
+  faktor_pengali_pareto = {"A":Decimal('1.0'), "B":Decimal('0.75'), "C":Decimal('0.5')}
 
-  #with open('monthly_max_usage.txt','w') as mu:
-    #for i in monthly_max_usage.keys():
-      #mu.write('{0}\t{1}\n'.format(list_master_corrected[i][0], monthly_max_usage[i]))
-  
   target_stock_based_on_pareto = {}
   for i in list_kode_obat_aktif:
     this_qty_cure = qty_cure[i]
@@ -492,13 +433,90 @@ if __name__ == '__main__':
     this_qty_min_disp = data_qty_min_display[i] if i in data_qty_min_display.keys() else 0
     max_of_them[i] = max(target_qty_pareto, this_qty_cure_2, this_qty_min_disp)
   
-  #with open('max_of_them.txt','w') as mot:
-    #for i in max_of_them.keys():
-      #mot.write('{0}\t{1}\n'.format(list_master_corrected[i][0], max_of_them[i]))
-  print list_kode_obat_dokter_inhouse
-  with open('all_of_them.txt','w') as aot:
-    aot.write('NAMA_OBAT\tMON_MAX_USAGE\tPARETO\tTRG_STK_PARETO\tQTY_CURE\tQTY_MIN_DISP\tMAX_OTHEM\n')
+ 
+  # INPUT : UPDATE_HARGA_ROP-OLD.TXT
+  # JENIS_BARANG | LOKASI | KODE_OBAT | NAMA_OBAT | SATUAN | HARGA | DISKON | ROP | KET
+  
+  old_data = {}
+  with open('UPDATE_HARGA_ROP-OLD.TXT','r') as old:
+    for line in old:
+      if string.split(line, '\t')[2][0].isdigit():
+        the_key = string.split(line, '\t')[2]
+        old_data[the_key] = [the_key, string.split(line, '\t')[3], string.split(line, '\t')[4], int(string.split(line, '\t')[5]) if string.split(line, '\t')[5] != '' else '', Decimal(string.split(line, '\t')[6]) if string.split(line, '\t')[6] != '' else '', int(string.split(line, '\t')[7])]
+  
+  
+  # OUTPUT TARGET : UPDATE_HARGA_ROP-{DATE-TODAY}.TXT
+  # JENIS_BARANG | LOKASI | KODE_OBAT | NAMA_OBAT | SATUAN | HARGA | DISKON | ROP | KET
+  # [KODE_OBAT] = [NAMA_OBAT,JENIS,LOKASI,SATUAN_OBAT,QTYAKHIR_OBAT,HNAPPNREG_OBAT,FAKTOR3,HJAH,DISCH,TANGGAL1,TANGGAL2]
+#----------- 
+  with open('UPDATE_HARGA_ROP-{0}{1}{2}.TXT'.format(time.gmtime(time.time()).tm_year, time.gmtime(time.time()).tm_mon, time.gmtime(time.time()).tm_mday),'w') as out_update:
+    temp_dict = {}
     for i in list_kode_obat_aktif:
-      aot.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(list_master_corrected[i][0], monthly_max_usage[i], "A" if i in pareto_a else "B" if i in pareto_b else "C" if i in pareto_c else "?", target_stock_based_on_pareto[i], qty_cure[i], data_qty_min_display[i] if i in data_qty_min_display.keys() else 0, max_of_them[i]))
+      if list_master_corrected[i][1] != 'NON-DISPLAY':
+        harga_perkalian_faktor = int(list_master_corrected[i][5] * list_master_corrected[i][6])
+        hjah = list_master_corrected[i][7]
+        diskon_berlaku = time.time() > list_master_corrected[i][9] and time.time() < list_master_corrected[i][10]
+        temp_dict[i] = [list_master_corrected[i][1], list_master_corrected[i][2], i, list_master_corrected[i][0], list_master_corrected[i][3], min(harga_perkalian_faktor, hjah) if hjah != 0 else harga_perkalian_faktor, list_master_corrected[i][8] if diskon_berlaku else 0, max_of_them[i]]
+      else:
+        temp_dict[i] = [list_master_corrected[i][1], list_master_corrected[i][2], i, list_master_corrected[i][0], list_master_corrected[i][3], '', '', max_of_them[i]]
+      #                         0jenis                       1lokasi          2kode          3nama                        4satuan                         5harga                                                                                 6diskon                          7rop
+    ket_dict = {}
+    for i in old_data.keys():
+      if i in temp_dict:
+        if temp_dict[i][0] == 'NON-DISPLAY':
+          ket = ""
+          if old_data[i][1] == temp_dict[i][3] and old_data[i][2] == temp_dict[i][4] and  old_data[i][5] == temp_dict[i][7]:
+            ket = "Sama"
+          else:
+            if old_data[i][1] != temp_dict[i][3]:
+              ket += "Nama obat: {0} --> {1}  ".format(old_data[i][1], temp_dict[i][3])
+            if old_data[i][2] != temp_dict[i][4]:
+              ket += "Satuan: {0} --> {1}  ".format(old_data[i][2], temp_dict[i][4])
+            if old_data[i][5] != temp_dict[i][7]:
+              ket += "ROP: {0} --> {1}  ".format(old_data[i][5], temp_dict[i][7])
+          ket_dict[i] = ket
+        else:
+          ket = ""
+          if old_data[i][1] == temp_dict[i][3] and old_data[i][2] == temp_dict[i][4] and old_data[i][3] == temp_dict[i][5] and old_data[i][4] == temp_dict[i][6] and old_data[i][5] == temp_dict[i][7]:
+            ket = "Sama"
+          else:
+            if old_data[i][1] != temp_dict[i][3]:
+              ket += "Nama obat: {0} --> {1}  ".format(old_data[i][1], temp_dict[i][3])
+            if old_data[i][2] != temp_dict[i][4]:
+              ket += "Satuan: {0} --> {1}  ".format(old_data[i][2], temp_dict[i][4])
+            if old_data[i][3] != temp_dict[i][5]:
+              ket += "Harga: {0} --> {1}  ".format(old_data[i][3], temp_dict[i][5])
+            if old_data[i][4] != temp_dict[i][6]:
+              ket += "Diskon: {0} --> {1}  ".format(old_data[i][4], temp_dict[i][6])
+            if old_data[i][5] != temp_dict[i][7]:
+              ket += "ROP: {0} --> {1}  ".format(old_data[i][5], temp_dict[i][7])
+          ket_dict[i] = ket
+    for i in list_kode_obat_aktif:
+      if i not in ket_dict.keys():
+        ket_dict[i] = "Baru"
+    
+    temp = []
+    for i in temp_dict.keys():
+      #                  0jenis         1lokasi          2kode            3nama             4satuan                                 5harga                                                      6diskon                                 7rop           8ket
+      temp.append([temp_dict[i][0], temp_dict[i][1], temp_dict[i][2], temp_dict[i][3], temp_dict[i][4], temp_dict[i][5] if temp_dict[i][0] != 'NON-DISPLAY' else '', temp_dict[i][6] if temp_dict[i][0] != 'NON-DISPLAY' else '', temp_dict[i][7], ket_dict[i]])
+      
+    temp2 = sorted(temp, key=itemgetter(0,1,3))
+    
+    out_update.write("JENIS_BARANG\tLOKASI\tKODE_OBAT\tNAMA_OBAT\tSATUAN\tHARGA\tDISKON\tROP\tKET\n")
+    for i in temp2:
+      out_update.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n".format(i[0],i[1],i[2],i[3],i[4],i[5],i[6],i[7],i[8]))
+
+#------------------    
+  # OUTPUT TARGET : DATA_BARANG_BELUM_MASUK_SHAFT.TXT
+  # KODE_OBAT | NAMA_OBAT | SHAFT
+  with open('DATA_BARANG_BELUM_MASUK_SHAFT-{0}{1}{2}.TXT'.format(time.gmtime(time.time()).tm_year, time.gmtime(time.time()).tm_mon, time.gmtime(time.time()).tm_mday),'w') as nis:
+    temp = []
+    for i in list_kode_obat_aktif:
+      if list_master_corrected[i][1] == "":
+        temp.append([i, list_master_corrected[i][0], list_master_corrected[i][2]])
+    temp2 = sorted(temp, key=itemgetter(1))
+    nis.write("KODE_OBAT\tNAMA_OBAT\tSHAFT\n")
+    for i in temp2:
+      nis.write("{0}\t{1}\t{2}\n".format(i[0], i[1], i[2]))
   
-  
+  # JENIS_BARANG | LOKASI | KODE_OBAT | NAMA_OBAT | SATUAN | HARGA | DISKON | ROP
