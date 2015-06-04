@@ -71,6 +71,7 @@ def create_master_list(loaded_raw_master_file, pattern):
   return master_list
 
 
+# i, j, k ---> KODE_OBAT, NAMA_OBAT, SORT_ITEM (NILAI atau KUNJ)
 def get_big_80(the_list):
   tl = the_list
   sum_values = 0
@@ -201,6 +202,8 @@ if __name__ == '__main__':
   
   ## Membuat dictionary dari tbhisdetiljual selama 6 bulan yang di buat dictionary dengan kode obat sebagai key nya.
   ## Dictionary of dictionaries
+  ## QTYJUAL_OBAT = [..,...,...,..]
+  ## JMLHRG_NETTO = [..,...,...,..]
   dict_tbhisdetiljual_gabung = {1:{}, 2:{}, 3:{}, 4:{}, 5:{}, 6:{}}
   for month in range(1,7):
     for row in list_tbhisdetiljual_gabung[month]:
